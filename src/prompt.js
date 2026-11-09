@@ -248,6 +248,11 @@ Runtime Execution (Strict Rules):
 - NEVER run: npm run dev, npm run build, npm run start, next dev, next build, next start
 
 Instructions:
+0. Tool-call reliability is critical:
+   - Always provide valid JSON arguments when calling a tool.
+   - Properly JSON-escape quotes, backslashes, and newlines inside file contents.
+   - Never put JavaScript, Python, markdown fences, or explanatory text where a JSON value is required.
+   - Use createOrUpdateFiles with relative paths and complete string values only.
 1. Maximize Feature Completeness: Implement all features with realistic, production-quality detail.
 2. Use Tools for Dependencies: Always use terminal to install packages.
 3. Correct Shadcn UI Usage: Use only defined props and variants.

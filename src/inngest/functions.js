@@ -69,7 +69,17 @@ export const codeAgentFunction = inngest.createFunction(
       name: "code-agent",
       description: "An expert coding agent",
       system: PROMPT,
-      model: gemini({ model: "gemini-2.5-flash" }),
+      model: gemini({
+        model: "gemini-2.5-flash",
+        defaultParameters: {
+          generationConfig: {
+            temperature: 0,
+            thinkingConfig: {
+              thinkingBudget: 0,
+            },
+          },
+        },
+      }),
       tools: [
         // 1. Terminal
         createTool({
@@ -212,14 +222,34 @@ export const codeAgentFunction = inngest.createFunction(
       name:"fragment-title-generator",
       description:"Generate a title for the fragment",
       system:FRAGMENT_TITLE_PROMPT,
-      model:gemini({model:"gemini-2.5-flash"})
+      model:gemini({
+        model:"gemini-2.5-flash",
+        defaultParameters: {
+          generationConfig: {
+            temperature: 0,
+            thinkingConfig: {
+              thinkingBudget: 0,
+            },
+          },
+        },
+      })
     })
 
     const responseGenerator = createAgent({
       name:"response-generator",
       description:"Generate a response for the fragment",
       system:RESPONSE_PROMPT,
-      model:gemini({model:"gemini-2.5-flash"})
+      model:gemini({
+        model:"gemini-2.5-flash",
+        defaultParameters: {
+          generationConfig: {
+            temperature: 0,
+            thinkingConfig: {
+              thinkingBudget: 0,
+            },
+          },
+        },
+      })
     })
 
 
@@ -227,7 +257,7 @@ export const codeAgentFunction = inngest.createFunction(
     const {output:responseOutput} = await responseGenerator.run(result.state.data.summary)
 
     const generateFragmentTitle = ()=>{
-      if(fragmentTitleOutput[0].type !=="text"){
+      if(!fragmentTitleOutput[0] || fragmentTitleOutput[0].type !=="text"){
         return "Untitled"
       }
 
@@ -240,7 +270,7 @@ export const codeAgentFunction = inngest.createFunction(
     }
 
     const generateResponse = ()=>{
-       if (responseOutput[0].type !== "text") {
+       if (!responseOutput[0] || responseOutput[0].type !== "text") {
         return "Here you go";
       }
 
