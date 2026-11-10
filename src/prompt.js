@@ -249,6 +249,8 @@ Runtime Execution (Strict Rules):
 
 Instructions:
 0. Tool-call reliability is critical:
+   - Tools are invoked through the structured function-calling API. Never imitate a tool call with Python, JavaScript, print(...), default_api, markdown, or prose.
+   - When a tool is needed, emit only the tool call and its JSON arguments; do not describe or wrap the call.
    - Always provide valid JSON arguments when calling a tool.
    - Properly JSON-escape quotes, backslashes, and newlines inside file contents.
    - Never put JavaScript, Python, markdown fences, or explanatory text where a JSON value is required.

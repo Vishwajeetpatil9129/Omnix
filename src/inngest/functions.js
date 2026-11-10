@@ -1,6 +1,6 @@
 import { inngest } from "./client";
 import {
-  gemini,
+  openai,
   createAgent,
   createTool,
   createNetwork,
@@ -69,15 +69,12 @@ export const codeAgentFunction = inngest.createFunction(
       name: "code-agent",
       description: "An expert coding agent",
       system: PROMPT,
-      model: gemini({
+      model: openai({
         model: "gemini-2.5-flash",
+        apiKey: process.env.GEMINI_API_KEY,
+        baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai/",
         defaultParameters: {
-          generationConfig: {
-            temperature: 0,
-            thinkingConfig: {
-              thinkingBudget: 0,
-            },
-          },
+          temperature: 0,
         },
       }),
       tools: [
@@ -222,15 +219,12 @@ export const codeAgentFunction = inngest.createFunction(
       name:"fragment-title-generator",
       description:"Generate a title for the fragment",
       system:FRAGMENT_TITLE_PROMPT,
-      model:gemini({
+      model:openai({
         model:"gemini-2.5-flash",
+        apiKey: process.env.GEMINI_API_KEY,
+        baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai/",
         defaultParameters: {
-          generationConfig: {
-            temperature: 0,
-            thinkingConfig: {
-              thinkingBudget: 0,
-            },
-          },
+          temperature: 0,
         },
       })
     })
@@ -239,15 +233,12 @@ export const codeAgentFunction = inngest.createFunction(
       name:"response-generator",
       description:"Generate a response for the fragment",
       system:RESPONSE_PROMPT,
-      model:gemini({
+      model:openai({
         model:"gemini-2.5-flash",
+        apiKey: process.env.GEMINI_API_KEY,
+        baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai/",
         defaultParameters: {
-          generationConfig: {
-            temperature: 0,
-            thinkingConfig: {
-              thinkingBudget: 0,
-            },
-          },
+          temperature: 0,
         },
       })
     })
