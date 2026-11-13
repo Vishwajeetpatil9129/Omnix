@@ -29,39 +29,70 @@ export const codeAgentFunction = inngest.createFunction(
       return sandbox.sandboxId;
     });
 
-    const previousMessages = await step.run(
-      "get-previous-messages",
-      async()=>{
+    const projectContext = await step.run(
+      "get-project-context",
+      async () => {
         const formattedMessages = [];
+        let files = {};
 
         const messages = await db.message.findMany({
-          where:{
-            projectId:event.data.projectId
+          where: {
+            projectId: event.data.projectId,
           },
-          orderBy:{
-            createdAt:"asc",
+          orderBy: {
+            createdAt: "asc",
+          },
+          include: {
+            fragments: true,
           },
         });
 
-        for(const message of messages){
+        for (const message of messages) {
           formattedMessages.push({
-            type:"text",
+            type: "text",
             role:message.role === "ASSISTANT" ? "assistant" : "user",
-            content:message.content
-          })
+            content: message.content,
+          });
+
+          if (message.fragments?.files) {
+            files = message.fragments.files;
+          }
         }
 
-        return formattedMessages
+        return { messages: formattedMessages, files };
       }
-    )
+    );
+
+    const previousFiles = Object.entries(projectContext.files || {}).reduce(
+      (files, [path, content]) => {
+        files[path] =
+          typeof content === "string" ? content : content?.content || "";
+        return files;
+      },
+      {}
+    );
+
+    await step.run("restore-project-files", async () => {
+      if (Object.keys(previousFiles).length === 0) {
+        return { restored: 0 };
+      }
+
+      const sandbox = await Sandbox.connect(sandboxId);
+
+      for (const [path, content] of Object.entries(previousFiles)) {
+        await sandbox.files.write(path, content);
+      }
+
+      return { restored: Object.keys(previousFiles).length };
+    });
 
     const state = createState({
       summary:"",
-      files:{}
+      files: previousFiles,
     }
   ,
   {
-    messages:previousMessages
+    messages: projectContext.messages
   }
 )
 
@@ -275,6 +306,15 @@ export const codeAgentFunction = inngest.createFunction(
     const isError =
       !result.state.data.summary ||
       Object.keys(result.state.data.files || {}).length === 0;
+
+    if (isError) {
+      console.error("Code agent did not produce a complete result", {
+        projectId: event.data.projectId,
+        hasSummary: Boolean(result.state.data.summary),
+        fileCount: Object.keys(result.state.data.files || {}).length,
+        restoredFileCount: Object.keys(previousFiles).length,
+      });
+    }
 
     const sandboxUrl = await step.run("get-sandbox-url", async () => {
       const sandbox = await Sandbox.connect(sandboxId);
